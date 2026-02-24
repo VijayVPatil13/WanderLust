@@ -1,0 +1,109 @@
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    flex: 1;
+}
+
+/* Navbar */
+.navbar {
+    height: 5rem;
+    background-color: white;
+}
+
+.fa-compass {
+    color: #fe424d;
+    font-size: 2rem;
+}
+
+.nav-link {
+    color: #222222 !important;
+}
+
+/* Footer */
+.f-info {
+    height: 6rem;
+    background-color: #ebebeb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.fa-brands {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.f-info-links {
+    margin-top: 0.5rem; 
+    display: flex;
+    gap: 1rem;
+}
+
+.f-info-links a {
+    text-decoration: none;
+    color: #222222;
+}
+
+.f-info-links a{
+    text-decoration: underline;
+}
+
+/* Cards */
+.card {
+    border: none !important;
+    margin-bottom: 2rem;
+}
+
+.card-img-top {
+    border-radius: 1rem !important;
+    width: 100% !important;
+    object-fit: cover;
+    height: 20rem;
+}
+
+.card-body {
+    padding: 0 !important;
+}
+
+.card-text {
+    font-weight: 400 !important;
+}
+
+/* Card Effect */
+.card-img-overlay{
+    opacity: 0;
+}
+
+.card-img-overlay:hover {
+    opacity: 0.3;
+    background-color: white;
+}
+
+
+/* New Listing */
+.add-btn, .edit-btn, .delete-btn {
+    background-color: #fe424d !important; 
+    border: none !important;
+}
+.add-btn:hover {
+    background-color: #e03e45 !important; 
+}
+
+.edit-btn a {
+    text-decoration: none;
+    color: white !important;
+}
+
+/* Show Image */
+.show-img {
+    height: 25rem !important;
+    width: 100% !important;
+    object-fit: cover;
+    border-radius: 1rem !important;
+}

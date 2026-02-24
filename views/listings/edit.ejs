@@ -1,0 +1,39 @@
+<% layout('/layouts/boilerplate') %>
+<body>
+    <div class="row">
+        <div class="col-8 offset-2"> 
+            <h3>Edit this Listing</h3>
+            <form action="/listings/<%= listing.id %>?_method=PUT" method="POST">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title:</label>
+                    <input type="text" id="title" name="listing[title]" value="<%= listing.title %>" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label><br>
+                    <textarea id="description" name="listing[description]" rows="4" cols="50" class="form-control" required><%= listing.description %></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">Image URL:</label>
+                    <input type="text" id="image" name="listing[image]" value="<%= listing.image %>" class="form-control" required>
+                </div>
+                <div class="row">
+                    <div class="mb-3 col-md-4">
+                        <label for="price" class="form-label">Price (per night):</label>
+                        <input type="number" id="price" name="listing[price]" value="<%= listing.price %>" class="form-control" required>
+                    </div>
+                    <div class="mb-3 col-md-8">
+                        <label for="location" class="form-label">Location:</label>
+                        <input type="text" id="location" name="listing[location]" value="<%= listing.location %>" class="form-control" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="country" class="form-label">Country:</label>
+                    <input type="text" id="country" name="listing[country]" value="<%= listing.country %>" class="form-control" required>
+                </div>
+                <div class="d-grid gap-2 col-6 mx-auto mb-3 mt-3">
+                    <button class="btn btn-dark add-btn" type="submit">Update Listing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
