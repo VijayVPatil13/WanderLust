@@ -3,7 +3,7 @@
     <div class="row mt-2">
         <div class="col-8 offset-2">   
             <h3>Create a New Listing</h3>
-            <form action="/listings" method="POST">
+            <form action="/listings" method="POST" novalidate class="needs-validation">
                 <div class="mb-3">
                     <label for="title" class="form-label">Title:</label>
                     <input type="text" id="title" class="form-control" name="listing[title]" required placeholder="Add your place name">
