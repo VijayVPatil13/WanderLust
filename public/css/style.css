@@ -87,16 +87,14 @@ body {
 
 
 /* New Listing */
-.add-btn, .edit-btn, .delete-btn {
-    background-color: #fe424d !important; 
+.add-btn,.edit-btn,.delete-btn {
+    background-color: #fe424d !important;
     border: none !important;
-}
-.add-btn:hover {
-    background-color: #e03e45 !important; 
+    color: white !important;
 }
 
-.edit-btn a {
-    text-decoration: none;
+.add-btn:hover,.edit-btn:hover,.delete-btn:hover {
+    background-color: #e03e45 !important;
     color: white !important;
 }
 

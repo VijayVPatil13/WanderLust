@@ -1,14 +1,20 @@
 const express = require('express');
 const mongoose = require("mongoose");
-const listings = require('./routes/listing.js');
-const reviews = require('./routes/review.js');
+const app = express();
+
+const listingRouter = require('./routes/listing.js');
+const reviewRouter = require('./routes/review.js');
+const userRouter = require('./routes/user.js');
+
 const path = require('path');
 const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
-const session = require('express-session');
-const flash = require('connect-flash');
 
-const app = express();
+const session = require('express-session');
+
+const User = require('./models/user.js');
+const passport = require('passport');
+const LocalStratergy = require('passport-local');
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 mongoose.connect(MONGO_URL)
@@ -36,20 +42,33 @@ const sessionOptions = {
   }
 };
 
-app.get('/', (req, res) => {
-  res.redirect("/listings");
-});
-
 app.use(session(sessionOptions));
-app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStratergy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
-  res.locals.success = req.flash("success");
+  res.locals.success = req.session.success;
+  res.locals.error = req.session.error;
+  delete req.session.success;
+  delete req.session.error;
   next();
 });
 
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
+app.use((req, res, next) => {
+  console.log("Incoming:", req.method, req.url);
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.redirect("/login");
+});
+
+app.use("/listings/:id/reviews", reviewRouter);
+app.use("/listings", listingRouter);
+app.use("/", userRouter);
 
 app.use((req, res) => {
   res.status(404).render("error.ejs", {
@@ -59,9 +78,13 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err.name === "UserExistsError") {
+    req.session.error = "Username already exists.";
+    return res.redirect("/signup");
+  }
   const status = err.status || 500;
   const message = err.message || "Something went wrong";
-  res.status(status).render("error.ejs", {
+  return res.status(status).render("error.ejs", {
     err: { message },
     status
   });

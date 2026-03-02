@@ -34,7 +34,8 @@ router.post("/", validateReview, wrapAsync(async (req, res) => {
   listing.reviews.push(review);
   await review.save();
   await listing.save();
-  req.flash("success", "New Review Created!");
+  // req.flash("success", "New Review Created!");
+  req.session.success = "New Review Created!";
   res.redirect(`/listings/${listing._id}`);
 }));
 
@@ -55,7 +56,8 @@ router.delete("/:reviewId", wrapAsync(async (req, res) => {
   if (!review) {
     throw new ExpressError(404, "Review Not Found");
   }
-  req.flash("success", "Review Deleted!");
+  // req.flash("success", "Review Deleted!");
+  req.session.success = "Review Deleted!";
   res.redirect(`/listings/${id}`);
 }));
 
