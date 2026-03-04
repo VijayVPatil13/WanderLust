@@ -13,8 +13,11 @@ async function initializeDb() {
     await Listing.deleteMany({});
     console.log("Old data cleared");
 
+    //Add owner to each listing
+    let sampleData = data.map((obj) => ({...obj, owner: '69a590acc82ace4ceeaa3248'}));
+    
     // Insert sample data
-    await Listing.insertMany(data);
+    await Listing.insertMany(sampleData);
     console.log("Database initialized with sample data");
 
     mongoose.connection.close();

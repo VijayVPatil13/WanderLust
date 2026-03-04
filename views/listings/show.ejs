@@ -8,22 +8,25 @@
             </div>
             <div class="col-md-6 offset-md-1 mt-5">
                 <div class="card-body">
+                    <p class="card-text mb-3">Owned By <i><%= listing.owner.username %></i></p>
                     <p class="card-text mb-3"><%= listing.description %></p>
                     <p class="card-text mb-3">&#x20b9; <%= listing.price.toLocaleString("en-IN") %>/night</p>
                     <p class="card-text mb-3"><%= listing.location %>, <%= listing.country %></p>
-                    <div class="d-flex gap-3 mt-4">
-                        <a href="/listings/<%= listing._id %>/edit"
-                        class="btn edit-btn">
-                            Edit Listing
-                        </a>
+                    <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+                        <div class="d-flex gap-3 mt-4">
+                            <a href="/listings/<%= listing._id %>/edit"
+                            class="btn edit-btn">
+                                Edit Listing
+                            </a>
 
-                        <form action="/listings/<%= listing._id %>?_method=DELETE"
-                            method="POST">
-                            <button class="btn delete-btn" type="submit">
-                                Delete Listing
-                            </button>
-                        </form>
-                    </div>
+                            <form action="/listings/<%= listing._id %>?_method=DELETE"
+                                method="POST">
+                                <button class="btn delete-btn" type="submit">
+                                    Delete Listing
+                                </button>
+                            </form>
+                        </div>
+                    <% } %>
                 </div>
             </div>
         </div>

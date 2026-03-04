@@ -52,6 +52,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
   res.locals.success = req.session.success;
   res.locals.error = req.session.error;
+  res.locals.currUser = req.user;
   delete req.session.success;
   delete req.session.error;
   next();
@@ -63,7 +64,7 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect("/login");
+  res.redirect("/listings");
 });
 
 app.use("/listings/:id/reviews", reviewRouter);

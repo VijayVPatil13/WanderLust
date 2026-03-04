@@ -5,20 +5,7 @@ const Listing = require('../models/listing.js');
 const Review = require('../models/review.js');
 const wrapAsync = require('../utils/wrapAsync.js');
 const ExpressError = require('../utils/ExpressError.js');
-const {reviewSchema} = require('../schema.js');
-
-const validateReview = (req, res, next) => {
-  if (!req.body || !req.body.review) {
-    throw new ExpressError(400, "Review body is required");
-  }
-  const { error } = reviewSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map(el => el.message).join(",");
-    throw new ExpressError(400, msg);
-  } else {
-    next();
-  }
-};
+const {validateReview} = require('../middleware.js');
 
 //Review post route
 router.post("/", validateReview, wrapAsync(async (req, res) => {

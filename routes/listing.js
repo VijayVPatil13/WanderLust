@@ -4,17 +4,7 @@ const router = express.Router();
 const Listing = require('../models/listing.js'); 
 const wrapAsync = require('../utils/wrapAsync.js');
 const ExpressError = require('../utils/ExpressError.js');
-const {listingSchema} = require('../schema.js');
-
-const validateListing = (req, res, next) => {
-  const { error } = listingSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map(el => el.message).join(",");
-    throw new ExpressError(400, msg);
-  } else {
-    next();
-  }
-};
+const {isLoggedIn, isOwner, validateListing} = require('../middleware.js');
 
 // Show all listings
 router.get("/", wrapAsync(async (req, res) => {
@@ -23,13 +13,14 @@ router.get("/", wrapAsync(async (req, res) => {
 }));
 
 // Create form
-router.get("/new", (req, res) => {
+router.get("/new", isLoggedIn, (req, res) => {
   res.render("listings/new.ejs");
 });
 
 // Create listing
-router.post("/", validateListing, wrapAsync(async (req, res) => {
+router.post("/", isLoggedIn, validateListing, wrapAsync(async (req, res) => {
   const listing = new Listing(req.body.listing);
+  listing.owner = req.user._id;
   await listing.save();
   // req.flash("success", "New Listing Created!");
   req.session.success = "New Listing Created!";
@@ -37,7 +28,7 @@ router.post("/", validateListing, wrapAsync(async (req, res) => {
 }));
 
 // Edit form
-router.get("/:id/edit", wrapAsync(async (req, res) => {
+router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(404, "Page Not Found");
@@ -50,7 +41,7 @@ router.get("/:id/edit", wrapAsync(async (req, res) => {
 }));
 
 // Update listing
-router.put("/:id", wrapAsync(async (req, res) => {
+router.put("/:id", isLoggedIn ,isOwner, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(404, "Page Not Found");
@@ -65,11 +56,11 @@ router.put("/:id", wrapAsync(async (req, res) => {
   }
   // req.flash("success", "Listing Updated!");
   req.session.success = "Listing Updated!";
-  res.redirect(`/listings/${req.params.id}`);
+  res.redirect(`/listings/${id}`);
 }));
 
 // Delete listing
-router.delete("/:id", wrapAsync(async (req, res) => {
+router.delete("/:id", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(404, "Page Not Found");
@@ -89,7 +80,7 @@ router.get("/:id", wrapAsync(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(404, "Page Not Found");
   }
-  const listing = await Listing.findById(id).populate('reviews');
+  const listing = await Listing.findById(id).populate('reviews').populate('owner');
   if (!listing) {
     throw new ExpressError(404, "Listing Not Found");
   }
