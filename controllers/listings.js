@@ -7,9 +7,51 @@ const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 const filters = require("../utils/filters");
 
 module.exports.index = async (req, res) => {
-  const listings = await Listing.find({});
-  res.render("listings/index.ejs", { listings, filters });
-}
+  const { search, location, minPrice, maxPrice, category } = req.query;
+  const andConditions = [];
+
+  if (search && search.trim() !== "") {
+    const searchRegex = new RegExp(search.trim(), "i");
+    andConditions.push({
+      $or: [
+        { title: searchRegex },
+        { description: searchRegex },
+        { location: searchRegex },
+        { country: searchRegex },
+        { category: searchRegex }
+      ]
+    });
+  }
+
+  if (location && location.trim() !== "") {
+    andConditions.push({ location: { $regex: location, $options: "i" } });
+  }
+
+  const min = parseInt(minPrice);
+  const max = parseInt(maxPrice);
+
+  if (!isNaN(min) || !isNaN(max)) {
+    const priceQuery = {};
+    if (!isNaN(min)) priceQuery.$gte = min;
+    if (!isNaN(max)) priceQuery.$lte = max;
+    andConditions.push({ price: priceQuery });
+  }
+
+  if (category) {
+    const catRegex = new RegExp(category, "i");
+    andConditions.push({
+      $or: [
+        { category: catRegex },
+        { title: catRegex },
+        { description: catRegex }
+      ]
+    });
+  }
+
+  const query = andConditions.length > 0 ? { $and: andConditions } : {};
+  const listings = await Listing.find(query);
+  res.render("listings/index.ejs", { listings, filters, req });
+};
 
 module.exports.renderNewForm = (req, res) => {
   res.render("listings/new.ejs");

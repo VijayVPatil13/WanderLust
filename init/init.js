@@ -13,8 +13,13 @@ async function initializeDb() {
     await Listing.deleteMany({});
     console.log("Old data cleared");
 
-    //Add owner to each listing
-    let sampleData = data.map((obj) => ({...obj, owner: '69a590acc82ace4ceeaa3248'}));
+    //Add owner, geometry and some categories to each listing
+    let sampleData = data.map((obj, i) => ({
+      ...obj, 
+      owner: '69a590acc82ace4ceeaa3248',
+      geometry: { type: "Point", coordinates: [0, 0] },
+      category: ["Trending", "Rooms", "Farms", "Arctic", "Camping", "Beach", "Mountain", "City"][i % 8]
+    }));
     
     // Insert sample data
     await Listing.insertMany(sampleData);

@@ -11,6 +11,11 @@ const listingSchema = new Schema({
     },
     location: String,
     country: String,
+    category: {
+      type: String,
+      enum: ["Trending", "Rooms", "Farms", "Arctic", "Camping", "Beach", "Mountain", "City"],
+      default: "Trending"
+    },
     image: {
         url: String,
         filename: String

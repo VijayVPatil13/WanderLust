@@ -59,51 +59,81 @@
         background-color: #ff385c;   
         border-color: #ff385c;
     }
+    .filter.active {
+        opacity: 1;
+        border-bottom: 2px solid black;
+    }
+    .no-results {
+        text-align: center;
+        margin-top: 3rem;
+        color: #555;
+        width: 100%;
+    }
 </style>
 <body>
     <!-- <h3>All Listings</h3> -->
     <!-- <form action="/listings/new" method="GET">
         <button>Add new place</button>
     </form> -->
-    <div id="filters">
-        <div class="filter-container">
-            <% filters.forEach(f => { %>
-                <div class="filter">
-                    <div><i class="fa-solid <%= f.icon %>"></i></div>
-                    <p><%= f.name %></p>
+    <form id="categoryForm" action="/listings" method="GET">
+        <input type="hidden" name="category" id="categoryInput" value="<%= req.query.category || '' %>">
+        <!-- Preserve navbar search state -->
+        <input type="hidden" name="search" value="<%= req.query.search || '' %>">
+        <input type="hidden" name="location" value="<%= req.query.location || '' %>">
+
+        <div id="filters">
+            <div class="filter-container">
+                <% filters.forEach(f => { %>
+                    <div class="filter <%= req.query.category === f.name ? 'active' : '' %>" onclick="selectCategory('<%= f.name %>')">
+                        <div><i class="fa-solid <%= f.icon %>"></i></div>
+                        <p><%= f.name %></p>
+                    </div>
+                <% }) %>
+            </div>
+            <div class="tax-toggle">
+                <div class="form-check-reverse form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
+                    <label class="form-check-label" for="switchCheckDefault">Display total after taxes</label>
                 </div>
-            <% }) %>
-        </div>
-        <div class="tax-toggle">
-            <div class="form-check-reverse form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
-                <label class="form-check-label" for="switchCheckDefault">Display total after taxes</label>
             </div>
         </div>
-    </div>
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
-    <% for (let listing of listings) { %>
-        <div class="col mb-4">
-            <a href="/listings/<%= listing.id %>" class="text-decoration-none text-dark">
-                <div class="card col listing-card">
-                    <img src="<%= listing.image.url %>" class="card-img-top" alt="listing image">
-                    <div class="card-img-overlay"></div>
-                    <div class="card-body">
-                        <p class="card-text">
-                            <b><%= listing.title %></b><br>
-                            &#x20b9; <%= listing.price.toLocaleString("en-IN") %>/night
-                            <i class="tax-info">&nbsp; &nbsp; +18% GST</i>
-                        </p>
-                    </div>
+    </form>
+    <% if (listings.length === 0) { %>
+        <div class="no-results">
+            <h3>No places found</h3>
+            <p>Try adjusting your search or filters.</p>
+            <a href="/listings" class="btn btn-outline-dark rounded-pill mt-2">Clear Filters</a>
+        </div>
+    <% } else { %>
+        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+            <% for (let listing of listings) { %>
+                <div class="col mb-4">
+                    <a href="/listings/<%= listing.id %>" class="text-decoration-none text-dark">
+                        <div class="card col listing-card">
+                            <img src="<%= listing.image.url %>" class="card-img-top" alt="listing image">
+                            <div class="card-img-overlay"></div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    <b><%= listing.title %></b><br>
+                                    &#x20b9; <%= listing.price.toLocaleString("en-IN") %>/night
+                                    <i class="tax-info">&nbsp; &nbsp; +18% GST</i>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </a>
+            <% } %>
         </div>
     <% } %>
-</div>
 
 </body>
 
 <script>
+    function selectCategory(category) {
+        document.getElementById('categoryInput').value = category;
+        document.getElementById('categoryForm').submit();
+    }
+
     let taxSwitch = document.getElementById("switchCheckDefault");
     taxSwitch.addEventListener("click", () => {
         let taxInfo = document.getElementsByClassName("tax-info");
