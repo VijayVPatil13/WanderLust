@@ -4,10 +4,11 @@ const ExpressError = require('../utils/ExpressError.js');
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 const mapToken = process.env.MAP_TOKEN;
 const geocodingClient = mbxGeocoding({ accessToken: mapToken });
+const filters = require("../utils/filters");
 
 module.exports.index = async (req, res) => {
   const listings = await Listing.find({});
-  res.render("listings/index.ejs", { listings });
+  res.render("listings/index.ejs", { listings, filters });
 }
 
 module.exports.renderNewForm = (req, res) => {

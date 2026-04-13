@@ -1,10 +1,87 @@
 <% layout('/layouts/boilerplate') %>
+<style>
+    #filters {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between; 
+    }
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .filter {
+        text-align: center;
+        margin-right: 2rem;
+        opacity: 0.7;
+    }
+    .filter:hover {
+        opacity: 1;
+        cursor: pointer;
+    }
+    .filter i {
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+    .tax-info {
+        display: none;
+    }
+    .tax-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 2rem;
+        background-color: #f7f7f7;
+        font-size: 0.9rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .tax-toggle:hover {
+        background-color: #e6e6e6;
+        cursor: pointer;
+    }
+    .tax-toggle .form-check {
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+    .form-switch {
+        font-size: 1rem;
+    }
+    .form-check-input {
+        cursor: pointer;
+        width: 2.5rem;
+        height: 1.3rem;
+    }
+
+    .form-check-input:checked {
+        background-color: #ff385c;   
+        border-color: #ff385c;
+    }
+</style>
 <body>
-    <h3>All Listings</h3>
+    <!-- <h3>All Listings</h3> -->
     <!-- <form action="/listings/new" method="GET">
         <button>Add new place</button>
     </form> -->
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+    <div id="filters">
+        <div class="filter-container">
+            <% filters.forEach(f => { %>
+                <div class="filter">
+                    <div><i class="fa-solid <%= f.icon %>"></i></div>
+                    <p><%= f.name %></p>
+                </div>
+            <% }) %>
+        </div>
+        <div class="tax-toggle">
+            <div class="form-check-reverse form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
+                <label class="form-check-label" for="switchCheckDefault">Display total after taxes</label>
+            </div>
+        </div>
+    </div>
+    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
     <% for (let listing of listings) { %>
         <div class="col mb-4">
             <a href="/listings/<%= listing.id %>" class="text-decoration-none text-dark">
@@ -15,6 +92,7 @@
                         <p class="card-text">
                             <b><%= listing.title %></b><br>
                             &#x20b9; <%= listing.price.toLocaleString("en-IN") %>/night
+                            <i class="tax-info">&nbsp; &nbsp; +18% GST</i>
                         </p>
                     </div>
                 </div>
@@ -24,4 +102,18 @@
 </div>
 
 </body>
+
+<script>
+    let taxSwitch = document.getElementById("switchCheckDefault");
+    taxSwitch.addEventListener("click", () => {
+        let taxInfo = document.getElementsByClassName("tax-info");
+        for(info of taxInfo) {
+            if(info.style.display != "inline") {
+                info.style.display = "inline";
+            } else {
+                info.style.display = "none";
+            }
+        }
+    });
+</script>
 
