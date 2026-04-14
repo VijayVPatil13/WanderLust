@@ -149,7 +149,7 @@ module.exports.showListing = async (req, res) => {
 
   const bookings = await Booking.find({
     listing: listing._id,
-    status: { $ne: "cancelled" }
+    status: { $nin: ["cancelled", "expired"] }
   });
 
   const bookedDates = bookings

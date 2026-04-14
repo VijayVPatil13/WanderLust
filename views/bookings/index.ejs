@@ -1,63 +1,352 @@
 <% layout('/layouts/boilerplate') %>
 <body>
-    <div class="col-md-10 offset-md-1 mt-4 mb-3">
-        <h3 class="bookings-page-title">My Bookings</h3>
-        <p class="bookings-page-subtitle">Manage your upcoming stays and booking status.</p>
-    </div>
-
-    <% if(bookings.length === 0) { %>
-        <div class="booking-empty-state col-md-10 offset-md-1 mt-3">
-            <div class="booking-empty-icon"><i class="fa-regular fa-calendar-check"></i></div>
-            <h4>No bookings yet</h4>
-            <p>Start exploring beautiful places and reserve your next trip.</p>
-            <a href="/listings" class="btn booking-empty-btn">Explore Listings</a>
+    <section class="bookings-page">
+        <div class="col-md-10 offset-md-1 mt-4 mb-3">
+            <h3 class="bookings-page-title">My Bookings</h3>
+            <p class="bookings-page-subtitle">Manage your upcoming stays and booking status.</p>
         </div>
-    <% } else { %>
-        <div class="row col-md-10 offset-md-1 mt-2 g-3 bookings-grid">
-            <% for(let booking of bookings) { %>
-                <div class="col-12">
-                    <article class="booking-card">
-                        <div class="booking-card-media">
-                            <% if(booking.listing && booking.listing.image && booking.listing.image.url) { %>
-                                <img src="<%= booking.listing.image.url %>" alt="Listing image" class="booking-card-image">
-                            <% } else { %>
-                                <div class="booking-card-placeholder">
-                                    <i class="fa-regular fa-image"></i>
+
+        <% if (bookings.length === 0) { %>
+            <div class="booking-empty-state col-md-10 offset-md-1 mt-3">
+                <div class="booking-empty-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                <h4>No bookings yet</h4>
+                <p>Start exploring beautiful places and reserve your next trip.</p>
+                <a href="/listings" class="btn booking-empty-btn">Explore Listings</a>
+            </div>
+        <% } else { %>
+            <div class="row col-md-10 offset-md-1 mt-2 g-3 bookings-grid">
+                <% for (let booking of bookings) {
+                    const isCancelled = booking.status === "cancelled";
+                    const isExpired = booking.status === "expired";
+                    const isPaid = booking.paymentStatus === "paid";
+                    const isFailed = booking.paymentStatus === "failed";
+                    const isRefunded = booking.paymentStatus === "refunded";
+                    const storedOrderId = booking.razorpayOrderId || booking.paymentOrderId || "";
+
+                    const deadline = booking.paymentDeadline ? new Date(booking.paymentDeadline) : null;
+                    const nowDate = new Date(now);
+                    const minutesToDeadline = deadline ? Math.max(0, Math.ceil((deadline.getTime() - nowDate.getTime()) / (1000 * 60))) : 0;
+
+                    const paymentActionLabel = isFailed ? "Retry Payment" : "Pay Now";
+                    const showPaymentAction = !isCancelled && !isPaid && !isRefunded;
+                    const showCancelAction = !isCancelled;
+
+                    const paymentLabelMap = {
+                        pending: "Pending",
+                        paid: "Paid",
+                        failed: "Failed",
+                        refunded: "Refunded"
+                    };
+                %>
+                    <div class="col-12">
+                        <article class="booking-card booking-card-compact">
+                            <div class="booking-card-media">
+                                <% if (booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                                    <img src="<%= booking.listing.image.url %>" alt="Listing image" class="booking-card-image">
+                                <% } else { %>
+                                    <div class="booking-card-placeholder">
+                                        <i class="fa-regular fa-image"></i>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="booking-card-content">
+                                <div class="booking-card-top">
+                                    <h5 class="booking-card-title mb-0">
+                                        <% if (booking.listing) { %>
+                                            <a href="/listings/<%= booking.listing._id %>" class="text-decoration-none text-dark">
+                                                <%= booking.listing.title %>
+                                            </a>
+                                        <% } else { %>
+                                            Listing unavailable
+                                        <% } %>
+                                    </h5>
+                                    <p class="booking-total-price"><%= formatCurrency(booking.totalPrice) %></p>
                                 </div>
-                            <% } %>
-                        </div>
-                        <div class="booking-card-content">
-                            <div class="booking-card-top">
-                                <h5 class="booking-card-title">
-                                    <% if(booking.listing) { %>
-                                        <a href="/listings/<%= booking.listing._id %>" class="text-decoration-none text-dark">
-                                            <%= booking.listing.title %>
-                                        </a>
-                                    <% } else { %>
-                                        Listing unavailable
-                                    <% } %>
-                                </h5>
-                                <p class="booking-total-price"><%= formatCurrency(booking.totalPrice) %></p>
-                            </div>
-                            <p class="booking-date-text">
-                                <i class="fa-regular fa-calendar"></i>
-                                <span><%= booking.checkIn.toLocaleDateString("en-IN") %> - <%= booking.checkOut.toLocaleDateString("en-IN") %></span>
-                            </p>
-                            <p class="booking-meta-text"><i class="fa-solid fa-user-group"></i> <span><%= booking.guests %> guest<%= booking.guests > 1 ? "s" : "" %></span></p>
-                            <div class="booking-status-row">
-                                <span class="booking-badge booking-status-<%= booking.status %>"><%= booking.status %></span>
-                                <span class="booking-badge booking-payment-<%= booking.paymentStatus %>">payment: <%= booking.paymentStatus %></span>
-                            </div>
 
-                            <% if(booking.status !== "cancelled") { %>
-                                <form action="/bookings/<%= booking._id %>?_method=DELETE" method="POST" class="booking-cancel-form">
-                                    <button class="btn booking-cancel-btn" type="submit">Cancel Booking</button>
-                                </form>
-                            <% } %>
-                        </div>
-                    </article>
-                </div>
-            <% } %>
-        </div>
-    <% } %>
+                                <p class="booking-date-text mb-1">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <span><%= booking.checkIn.toLocaleDateString("en-IN") %> - <%= booking.checkOut.toLocaleDateString("en-IN") %></span>
+                                </p>
+                                <p class="booking-meta-text mb-1"><i class="fa-solid fa-user-group"></i> <span><%= booking.guests %> guest<%= booking.guests > 1 ? "s" : "" %></span></p>
+
+                                <div class="booking-status-row">
+                                    <span class="booking-badge booking-status-<%= booking.status %>"><%= booking.status %></span>
+                                    <span class="booking-badge booking-payment-<%= booking.paymentStatus %>"><%= paymentLabelMap[booking.paymentStatus] || booking.paymentStatus %></span>
+                                </div>
+
+                                <% if (showPaymentAction || showCancelAction) { %>
+                                    <div class="booking-actions">
+                                        <% if (showPaymentAction) { %>
+                                            <% if (isExpired) { %>
+                                                <button class="btn btn-primary btn-small js-booking-pay-btn" type="button" disabled>
+                                                    <i class="fa-regular fa-clock"></i>
+                                                    <span>Booking expired</span>
+                                                </button>
+                                            <% } else { %>
+                                                <button
+                                                    class="btn btn-primary btn-small js-booking-pay-btn"
+                                                    type="button"
+                                                    data-booking-id="<%= booking._id %>"
+                                                    data-action="<%= isFailed ? "retry" : "pay" %>"
+                                                    data-default-label="<%= paymentActionLabel %>"
+                                                    data-payment-status="<%= booking.paymentStatus %>"
+                                                    data-order-id="<%= storedOrderId %>"
+                                                >
+                                                    <i class="fa-regular fa-credit-card"></i>
+                                                    <span><%= paymentActionLabel %></span>
+                                                </button>
+                                            <% } %>
+                                        <% } %>
+
+                                        <% if (showCancelAction) { %>
+                                            <form action="/bookings/<%= booking._id %>?_method=DELETE" method="POST" class="js-cancel-booking-form m-0">
+                                                <button class="btn btn-secondary btn-small js-cancel-booking-btn" type="submit" data-default-label="Cancel Booking">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                    <span>Cancel Booking</span>
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+
+                                <% if (showPaymentAction && !isExpired) { %>
+                                    <p class="booking-payment-note mb-1">Secure payment powered by Razorpay</p>
+                                    <p class="booking-warning-note mb-0">⚠️ Complete payment before deadline to confirm booking<% if (minutesToDeadline > 0) { %> (<%= minutesToDeadline %> min left)<% } %>.</p>
+                                <% } else if (isExpired) { %>
+                                    <p class="booking-payment-note booking-expired-note mb-0">Payment deadline passed. This booking is expired.</p>
+                                <% } %>
+                            </div>
+                        </article>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+
+        <div id="booking-toast-container" class="booking-toast-container" aria-live="polite" aria-atomic="true"></div>
+    </section>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        (() => {
+            const payButtons = Array.from(document.querySelectorAll(".js-booking-pay-btn[data-booking-id]"));
+            const cancelForms = Array.from(document.querySelectorAll(".js-cancel-booking-form"));
+            const fallbackKey = "<%= key_id || "" %>";
+            const toastContainer = document.getElementById("booking-toast-container");
+
+            const showToast = (message, type = "error") => {
+                if (!toastContainer) return;
+
+                const toast = document.createElement("div");
+                toast.className = `booking-inline-toast ${type === "success" ? "booking-inline-toast-success" : "booking-inline-toast-error"}`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+
+                requestAnimationFrame(() => toast.classList.add("show"));
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                    setTimeout(() => toast.remove(), 220);
+                }, 3000);
+            };
+
+            const setButtonContent = (button, label, iconClass) => {
+                button.innerHTML = `<i class="${iconClass}"></i><span>${label}</span>`;
+            };
+
+            const setButtonLoadingState = (button, loading, loadingText = "Processing...") => {
+                if (loading) {
+                    button.disabled = true;
+                    button.dataset.loading = "true";
+                    button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span>${loadingText}</span>`;
+                    return;
+                }
+
+                button.disabled = false;
+                button.dataset.loading = "false";
+                const defaultLabel = button.dataset.defaultLabel || "Pay Now";
+                const iconClass = button.dataset.action === "retry" ? "fa-solid fa-rotate-right" : "fa-regular fa-credit-card";
+                setButtonContent(button, defaultLabel, iconClass);
+            };
+
+            const verifyPayment = async (bookingId, paymentResponse) => {
+                const verifyResponse = await fetch("/api/bookings/verify-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        bookingId,
+                        razorpay_order_id: paymentResponse.razorpay_order_id,
+                        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                        razorpay_signature: paymentResponse.razorpay_signature
+                    })
+                });
+
+                const verifyResult = await verifyResponse.json().catch(() => ({}));
+                if (!verifyResponse.ok || !verifyResult.success) {
+                    throw new Error(verifyResult.message || "Payment verification failed.");
+                }
+            };
+
+            const markPaymentFailed = async (bookingId, orderId) => {
+                const failedResponse = await fetch(`/api/bookings/${bookingId}/payment-failed`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ razorpay_order_id: orderId })
+                });
+
+                const failedResult = await failedResponse.json().catch(() => ({}));
+                if (!failedResponse.ok || !failedResult.success) {
+                    throw new Error(failedResult.message || "Payment failed. Try again.");
+                }
+            };
+
+            const recoverPendingPayments = async () => {
+                const candidates = payButtons.filter((button) =>
+                    button.dataset.paymentStatus === "pending" && button.dataset.orderId
+                );
+
+                if (!candidates.length) {
+                    return;
+                }
+
+                let shouldReload = false;
+
+                await Promise.all(candidates.map(async (button) => {
+                    const bookingId = button.dataset.bookingId;
+
+                    try {
+                        const response = await fetch(`/api/bookings/${bookingId}/payment-status`);
+                        const result = await response.json().catch(() => ({}));
+
+                        if (!response.ok || !result.success || !result.booking) {
+                            return;
+                        }
+
+                        if (result.booking.paymentStatus === "paid") {
+                            showToast("Payment confirmed from gateway.", "success");
+                            shouldReload = true;
+                            return;
+                        }
+
+                        if (result.booking.status === "expired") {
+                            showToast("Booking payment window expired.");
+                            shouldReload = true;
+                        }
+                    } catch (err) {
+                        // Silent fallback; webhook still reconciles payment in background.
+                    }
+                }));
+
+                if (shouldReload) {
+                    setTimeout(() => window.location.reload(), 700);
+                }
+            };
+
+            const startPayment = async (button) => {
+                if (button.dataset.loading === "true") {
+                    return;
+                }
+
+                const bookingId = button.dataset.bookingId;
+                const loadingText = button.dataset.action === "retry" ? "Preparing retry..." : "Preparing payment...";
+                setButtonLoadingState(button, true, loadingText);
+
+                try {
+                    const createOrderResponse = await fetch(`/api/bookings/${bookingId}/create-order`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" }
+                    });
+
+                    const orderResult = await createOrderResponse.json().catch(() => ({}));
+
+                    if (!createOrderResponse.ok || !orderResult.success) {
+                        throw new Error(orderResult.message || "Unable to start payment.");
+                    }
+
+                    if (orderResult.alreadyPaid) {
+                        showToast(orderResult.message || "Booking already paid.", "success");
+                        setTimeout(() => window.location.reload(), 500);
+                        return;
+                    }
+
+                    if (!window.Razorpay || !orderResult.order || !orderResult.order.id) {
+                        throw new Error("Payment service is unavailable right now.");
+                    }
+
+                    let hasFinalResult = false;
+                    const options = {
+                        key: orderResult.key || fallbackKey,
+                        amount: String(orderResult.order.amount),
+                        currency: orderResult.order.currency || "INR",
+                        name: "WanderLust",
+                        description: "Booking Payment",
+                        order_id: orderResult.order.id,
+                        modal: {
+                            ondismiss: function () {
+                                if (!hasFinalResult) {
+                                    setButtonLoadingState(button, false);
+                                }
+                            }
+                        },
+                        handler: async function (paymentResponse) {
+                            hasFinalResult = true;
+                            setButtonLoadingState(button, true, "Verifying payment...");
+
+                            try {
+                                await verifyPayment(bookingId, paymentResponse);
+                                showToast("Payment successful! Booking confirmed.", "success");
+                                setTimeout(() => window.location.reload(), 700);
+                            } catch (error) {
+                                showToast(error.message || "Unable to verify payment.");
+                                setButtonLoadingState(button, false);
+                            }
+                        }
+                    };
+
+                    const checkout = new Razorpay(options);
+
+                    checkout.on("payment.failed", async function () {
+                        hasFinalResult = true;
+                        button.dataset.action = "retry";
+                        button.dataset.defaultLabel = "Retry Payment";
+
+                        try {
+                            await markPaymentFailed(bookingId, orderResult.order.id);
+                            showToast("Payment failed. Try again.");
+                        } catch (error) {
+                            showToast(error.message || "Payment failed. Try again.");
+                        }
+
+                        setButtonLoadingState(button, false);
+                        setTimeout(() => window.location.reload(), 650);
+                    });
+
+                    checkout.open();
+                } catch (error) {
+                    showToast(error.message || "Network issue while starting payment. Please retry.");
+                    setButtonLoadingState(button, false);
+                }
+            };
+
+            payButtons.forEach((button) => {
+                button.dataset.loading = "false";
+                button.addEventListener("click", () => startPayment(button));
+            });
+
+            cancelForms.forEach((form) => {
+                form.addEventListener("submit", (event) => {
+                    const btn = form.querySelector(".js-cancel-booking-btn");
+                    if (!btn || btn.dataset.loading === "true") {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    btn.dataset.loading = "true";
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span>Cancelling...</span>`;
+                });
+            });
+
+            recoverPendingPayments();
+        })();
+    </script>
 </body>

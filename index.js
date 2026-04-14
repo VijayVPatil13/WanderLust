@@ -10,6 +10,9 @@ const listingRouter = require('./routes/listing.js');
 const reviewRouter = require('./routes/review.js');
 const userRouter = require('./routes/user.js');
 const bookingRouter = require('./routes/booking.js');
+const bookingApiRouter = require('./routes/bookingApi.js');
+const webhookRouter = require('./routes/webhook.js');
+const { startBookingExpiryJob } = require('./utils/bookingExpiryJob.js');
 
 const path = require('path');
 const methodOverride = require('method-override');
@@ -23,14 +26,23 @@ const LocalStratergy = require('passport-local');
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 mongoose.connect(MONGO_URL)
-    .then(() => console.log("MongoDB Connected"))
+    .then(() => {
+      console.log("MongoDB Connected");
+      startBookingExpiryJob();
+    })
     .catch(err => console.error("MongoDB Error:", err));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    if (buf && buf.length) {
+      req.rawBody = buf;
+    }
+  }
+}));
 app.use(methodOverride('_method'));
 
 app.engine("ejs", ejsMate);
@@ -75,6 +87,8 @@ app.get('/', (req, res) => {
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/listings", listingRouter);
 app.use("/bookings", bookingRouter);
+app.use("/api/bookings", bookingApiRouter);
+app.use("/api/webhooks", webhookRouter);
 app.use("/", userRouter);
 
 app.use((req, res) => {

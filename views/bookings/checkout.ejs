@@ -15,6 +15,12 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         const payBtn = document.getElementById("pay-btn");
+        const bookingId = "<%= booking._id %>";
+
+        const resetButton = () => {
+            payBtn.disabled = false;
+            payBtn.textContent = "Pay Now";
+        };
 
         const options = {
             key: "<%= key_id %>",
@@ -25,20 +31,25 @@
             order_id: "<%= order.id %>",
             modal: {
                 ondismiss: function () {
-                    payBtn.disabled = false;
-                    payBtn.textContent = "Pay Now";
+                    resetButton();
                 }
             },
             handler: async function (response) {
                 payBtn.disabled = true;
                 payBtn.textContent = "Verifying...";
+
                 try {
-                    const verifyResponse = await fetch("/bookings/verify-payment", {
+                    const verifyResponse = await fetch("/api/bookings/verify-payment", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
                         },
-                        body: JSON.stringify(response)
+                        body: JSON.stringify({
+                            bookingId,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
                     });
 
                     const result = await verifyResponse.json();
@@ -47,26 +58,37 @@
                         return;
                     }
 
-                    payBtn.disabled = false;
-                    payBtn.textContent = "Pay Now";
+                    resetButton();
                     alert(result.message || "Payment verification failed. Please try again.");
                 } catch (err) {
-                    payBtn.disabled = false;
-                    payBtn.textContent = "Pay Now";
+                    resetButton();
                     alert("Unable to verify payment right now. Please try again.");
                 }
             }
         };
 
         const rzp = new Razorpay(options);
-        rzp.on("payment.failed", function (response) {
+        rzp.on("payment.failed", async function (response) {
             console.error(response.error);
-            alert("Payment failed. Please try again.");
+
+            try {
+                await fetch(`/api/bookings/${bookingId}/payment-failed`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ razorpay_order_id: "<%= order.id %>" })
+                });
+            } catch (err) {
+                console.error(err);
+            }
+
+            alert("Payment failed. Try again.");
             window.location.href = "/bookings";
         });
 
         payBtn.onclick = function () {
-            this.innerText = "Processing...";
+            this.textContent = "Processing...";
             this.disabled = true;
             rzp.open();
         };
