@@ -19,15 +19,16 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 
 const session = require('express-session');
+const MongoStore = require('connect-mongo').default;
 
 const User = require('./models/user.js');
 const passport = require('passport');
 const LocalStratergy = require('passport-local');
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
-mongoose.connect(MONGO_URL)
+const dbUrl = process.env.ATLASDB_URL;
+mongoose.connect(dbUrl)
     .then(() => {
-      console.log("MongoDB Connected");
+      console.log("MongoDB Atlas connected");
       startBookingExpiryJob();
     })
     .catch(err => console.error("MongoDB Error:", err));
@@ -48,8 +49,21 @@ app.use(methodOverride('_method'));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
+const store = MongoStore.create({
+  mongoUrl: dbUrl,
+  crypto: {
+    secret: process.env.SECRET,
+  },
+  touchAfter: 24 * 3600
+});
+
+store.on("error", (err) => {
+  console.log("Error in Mongo Session", err);
+});
+
 const sessionOptions = {
-  secret: "mysupersecretcode",
+  store,
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
   cookie: {
