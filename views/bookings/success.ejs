@@ -1,0 +1,14 @@
+<% layout('/layouts/boilerplate') %>
+<body>
+    <div class="success-card">
+        <h2>Booking Confirmed</h2>
+        <p class="booking-muted mb-3">Your payment is successful and your stay is reserved.</p>
+
+        <p><strong>Listing:</strong> <%= booking.listing ? booking.listing.title : "Listing unavailable" %></p>
+        <p><strong>Dates:</strong> <%= booking.checkIn.toDateString() %> - <%= booking.checkOut.toDateString() %></p>
+        <p><strong>Total Paid:</strong> <%= formatCurrency(booking.totalPrice) %></p>
+        <p><strong>Payment ID:</strong> <%= booking.paymentId %></p>
+
+        <a href="/bookings" class="btn booking-now-btn mt-3">Go to My Bookings</a>
+    </div>
+</body>

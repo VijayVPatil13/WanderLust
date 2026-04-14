@@ -9,6 +9,7 @@ const app = express();
 const listingRouter = require('./routes/listing.js');
 const reviewRouter = require('./routes/review.js');
 const userRouter = require('./routes/user.js');
+const bookingRouter = require('./routes/booking.js');
 
 const path = require('path');
 const methodOverride = require('method-override');
@@ -73,6 +74,7 @@ app.get('/', (req, res) => {
 
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/listings", listingRouter);
+app.use("/bookings", bookingRouter);
 app.use("/", userRouter);
 
 app.use((req, res) => {

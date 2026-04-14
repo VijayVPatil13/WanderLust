@@ -1,75 +1,4 @@
 <% layout('/layouts/boilerplate') %>
-<style>
-    #filters {
-        margin-top: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between; 
-    }
-    .filter-container {
-        display: flex;
-        flex-wrap: wrap;
-    }
-    .filter {
-        text-align: center;
-        margin-right: 2rem;
-        opacity: 0.7;
-    }
-    .filter:hover {
-        opacity: 1;
-        cursor: pointer;
-    }
-    .filter i {
-        font-size: 20px;
-        margin-bottom: 5px;
-    }
-    .tax-info {
-        display: none;
-    }
-    .tax-toggle {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border: 1px solid #ddd;
-        border-radius: 2rem;
-        background-color: #f7f7f7;
-        font-size: 0.9rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    .tax-toggle:hover {
-        background-color: #e6e6e6;
-        cursor: pointer;
-    }
-    .tax-toggle .form-check {
-        display: flex;
-        align-items: center;
-        margin: 0;
-    }
-    .form-switch {
-        font-size: 1rem;
-    }
-    .form-check-input {
-        cursor: pointer;
-        width: 2.5rem;
-        height: 1.3rem;
-    }
-
-    .form-check-input:checked {
-        background-color: #ff385c;   
-        border-color: #ff385c;
-    }
-    .filter.active {
-        opacity: 1;
-        border-bottom: 2px solid black;
-    }
-    .no-results {
-        text-align: center;
-        margin-top: 3rem;
-        color: #555;
-        width: 100%;
-    }
-</style>
 <body>
     <!-- <h3>All Listings</h3> -->
     <!-- <form action="/listings/new" method="GET">
@@ -128,22 +57,5 @@
 
 </body>
 
-<script>
-    function selectCategory(category) {
-        document.getElementById('categoryInput').value = category;
-        document.getElementById('categoryForm').submit();
-    }
-
-    let taxSwitch = document.getElementById("switchCheckDefault");
-    taxSwitch.addEventListener("click", () => {
-        let taxInfo = document.getElementsByClassName("tax-info");
-        for(info of taxInfo) {
-            if(info.style.display != "inline") {
-                info.style.display = "inline";
-            } else {
-                info.style.display = "none";
-            }
-        }
-    });
-</script>
+<script src="/js/taxSwitch.js"></script>
 

@@ -1,0 +1,74 @@
+<% layout('/layouts/boilerplate') %>
+<body>
+    <div class="col-md-8 offset-md-2 mt-4">
+        <div class="booking-empty-state">
+            <h3 class="bookings-page-title">Complete Payment</h3>
+            <p class="bookings-page-subtitle mb-3">Secure your booking to confirm your stay.</p>
+
+            <h3 class="bookings-page-title mb-1">Total Amount: <%= formatCurrency(booking.totalPrice) %></h3>
+            <p class="booking-muted mb-3">Secure payment powered by Razorpay</p>
+
+            <button id="pay-btn" class="btn booking-now-btn">Pay Now</button>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        const payBtn = document.getElementById("pay-btn");
+
+        const options = {
+            key: "<%= key_id %>",
+            amount: "<%= order.amount %>",
+            currency: "INR",
+            name: "WanderLust",
+            description: "Booking Payment",
+            order_id: "<%= order.id %>",
+            modal: {
+                ondismiss: function () {
+                    payBtn.disabled = false;
+                    payBtn.textContent = "Pay Now";
+                }
+            },
+            handler: async function (response) {
+                payBtn.disabled = true;
+                payBtn.textContent = "Verifying...";
+                try {
+                    const verifyResponse = await fetch("/bookings/verify-payment", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(response)
+                    });
+
+                    const result = await verifyResponse.json();
+                    if (result.success) {
+                        window.location.href = result.redirectUrl || "/bookings";
+                        return;
+                    }
+
+                    payBtn.disabled = false;
+                    payBtn.textContent = "Pay Now";
+                    alert(result.message || "Payment verification failed. Please try again.");
+                } catch (err) {
+                    payBtn.disabled = false;
+                    payBtn.textContent = "Pay Now";
+                    alert("Unable to verify payment right now. Please try again.");
+                }
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on("payment.failed", function (response) {
+            console.error(response.error);
+            alert("Payment failed. Please try again.");
+            window.location.href = "/bookings";
+        });
+
+        payBtn.onclick = function () {
+            this.innerText = "Processing...";
+            this.disabled = true;
+            rzp.open();
+        };
+    </script>
+</body>

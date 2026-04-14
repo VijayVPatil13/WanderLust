@@ -1,0 +1,63 @@
+<% layout('/layouts/boilerplate') %>
+<body>
+    <div class="col-md-10 offset-md-1 mt-4 mb-3">
+        <h3 class="bookings-page-title">My Bookings</h3>
+        <p class="bookings-page-subtitle">Manage your upcoming stays and booking status.</p>
+    </div>
+
+    <% if(bookings.length === 0) { %>
+        <div class="booking-empty-state col-md-10 offset-md-1 mt-3">
+            <div class="booking-empty-icon"><i class="fa-regular fa-calendar-check"></i></div>
+            <h4>No bookings yet</h4>
+            <p>Start exploring beautiful places and reserve your next trip.</p>
+            <a href="/listings" class="btn booking-empty-btn">Explore Listings</a>
+        </div>
+    <% } else { %>
+        <div class="row col-md-10 offset-md-1 mt-2 g-3 bookings-grid">
+            <% for(let booking of bookings) { %>
+                <div class="col-12">
+                    <article class="booking-card">
+                        <div class="booking-card-media">
+                            <% if(booking.listing && booking.listing.image && booking.listing.image.url) { %>
+                                <img src="<%= booking.listing.image.url %>" alt="Listing image" class="booking-card-image">
+                            <% } else { %>
+                                <div class="booking-card-placeholder">
+                                    <i class="fa-regular fa-image"></i>
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="booking-card-content">
+                            <div class="booking-card-top">
+                                <h5 class="booking-card-title">
+                                    <% if(booking.listing) { %>
+                                        <a href="/listings/<%= booking.listing._id %>" class="text-decoration-none text-dark">
+                                            <%= booking.listing.title %>
+                                        </a>
+                                    <% } else { %>
+                                        Listing unavailable
+                                    <% } %>
+                                </h5>
+                                <p class="booking-total-price"><%= formatCurrency(booking.totalPrice) %></p>
+                            </div>
+                            <p class="booking-date-text">
+                                <i class="fa-regular fa-calendar"></i>
+                                <span><%= booking.checkIn.toLocaleDateString("en-IN") %> - <%= booking.checkOut.toLocaleDateString("en-IN") %></span>
+                            </p>
+                            <p class="booking-meta-text"><i class="fa-solid fa-user-group"></i> <span><%= booking.guests %> guest<%= booking.guests > 1 ? "s" : "" %></span></p>
+                            <div class="booking-status-row">
+                                <span class="booking-badge booking-status-<%= booking.status %>"><%= booking.status %></span>
+                                <span class="booking-badge booking-payment-<%= booking.paymentStatus %>">payment: <%= booking.paymentStatus %></span>
+                            </div>
+
+                            <% if(booking.status !== "cancelled") { %>
+                                <form action="/bookings/<%= booking._id %>?_method=DELETE" method="POST" class="booking-cancel-form">
+                                    <button class="btn booking-cancel-btn" type="submit">Cancel Booking</button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </article>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+</body>

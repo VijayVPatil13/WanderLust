@@ -1,10 +1,13 @@
 const Listing = require('../models/listing.js'); 
+const Booking = require("../models/booking.js");
 const mongoose = require("mongoose");
 const ExpressError = require('../utils/ExpressError.js');
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 const mapToken = process.env.MAP_TOKEN;
 const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 const filters = require("../utils/filters");
+const pricingConfig = require('../utils/pricingConfig.js');
+const { formatCurrency } = require("../utils/currency.js");
 
 module.exports.index = async (req, res) => {
   const { search, location, minPrice, maxPrice, category } = req.query;
@@ -143,5 +146,22 @@ module.exports.showListing = async (req, res) => {
   if (!listing) {
     throw new ExpressError(404, "Listing Not Found");
   }
-  res.render("listings/show.ejs", { listing });
+
+  const bookings = await Booking.find({
+    listing: listing._id,
+    status: { $ne: "cancelled" }
+  });
+
+  const bookedDates = bookings
+    .map((booking) => {
+      if (!booking.checkIn || !booking.checkOut) return null;
+      const from = booking.checkIn.toISOString().split("T")[0];
+      const toDate = new Date(booking.checkOut);
+      toDate.setUTCDate(toDate.getUTCDate() - 1);
+      const to = toDate.toISOString().split("T")[0];
+      return { from, to };
+    })
+    .filter(Boolean);
+
+  res.render("listings/show.ejs", { listing, pricingConfig, formatCurrency, bookedDates });
 }
