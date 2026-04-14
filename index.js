@@ -19,7 +19,7 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 
 const session = require('express-session');
-const MongoStore = require('connect-mongo').default;
+const MongoStore = require('connect-mongo');
 
 const User = require('./models/user.js');
 const passport = require('passport');
