@@ -1,4 +1,4 @@
-if(process.env.NODE_ENV != "production") {
+if (process.env.NODE_ENV != "production") {
   require('dotenv').config();
 }
 
@@ -28,11 +28,11 @@ const LocalStratergy = require('passport-local');
 
 const dbUrl = process.env.ATLASDB_URL;
 mongoose.connect(dbUrl)
-    .then(() => {
-      console.log("MongoDB Atlas connected");
-      startBookingExpiryJob();
-    })
-    .catch(err => console.error("MongoDB Error:", err));
+  .then(() => {
+    console.log("MongoDB Atlas connected");
+    startBookingExpiryJob();
+  })
+  .catch(err => console.error("MongoDB Error:", err));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -70,7 +70,8 @@ const sessionOptions = {
   cookie: {
     expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    httpOnly: true
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production"
   }
 };
 
@@ -80,6 +81,13 @@ app.use(passport.session());
 passport.use(new LocalStratergy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+  if (req.method === "HEAD") {
+    return res.status(200).end();
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   res.locals.success = req.session.success;
@@ -96,7 +104,7 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect("/listings");
+  return res.redirect("/listings");
 });
 
 app.use("/listings/:id/reviews", reviewRouter);
@@ -114,12 +122,18 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err); // 🔥 CRITICAL FIX
+  }
+
   if (err.name === "UserExistsError") {
     req.session.error = "Username already exists.";
     return res.redirect("/signup");
   }
+
   const status = err.status || 500;
   const message = err.message || "Something went wrong";
+
   return res.status(status).render("error.ejs", {
     err: { message },
     status
