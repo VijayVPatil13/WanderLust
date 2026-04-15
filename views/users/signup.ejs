@@ -1,44 +1,39 @@
 <% layout('/layouts/boilerplate') %>
 <body>
-    <div class="row mt-2">
-        <div class="col-6 offset-3">   
-            <h3>SignUp for WanderLust</h3>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h3>Join WanderLust</h3>
             <form action="/signup" method="POST" novalidate class="needs-validation">
                 <div class="mb-3">
-                    <label for="username" class="form-label">Username:</label>
-                    <input type="text" id="username" class="form-control" name="username" required >
-                    <div class="invalid-feedback">
-                        Please enter username.
-                    </div>
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" class="form-control" name="username" required placeholder="Choose a username">
+                    <div class="invalid-feedback">Please enter a username.</div>
                 </div>
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email:</label>
-                    <input type="email" id="email" class="form-control" name="email" required >
-                    <div class="invalid-feedback">
-                        Please enter email.
-                    </div>
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-control" name="email" required placeholder="you@example.com">
+                    <div class="invalid-feedback">Please enter a valid email.</div>
                 </div>
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password:</label>
-                    <input type="password" id="password" class="form-control" name="password" required >
-                    <div class="invalid-feedback">
-                        Please enter password.
-                    </div>
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" name="password" required placeholder="Create a password">
+                    <div class="invalid-feedback">Please enter a password.</div>
                 </div>
-                <div class="col-12 mb-3">
+                <div class="mb-3">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="" id="invalidCheck" required>
-                        <label class="form-check-label" for="invalidCheck">
-                            Agree to terms and conditions
+                        <label class="form-check-label" for="invalidCheck" style="font-size:0.87rem;">
+                            I agree to the <a href="/terms" style="color:var(--wl-primary);">terms and conditions</a>
                         </label>
-                        <div class="invalid-feedback">
-                            You must agree before submitting.
-                        </div>
+                        <div class="invalid-feedback">You must agree before submitting.</div>
                     </div>
                 </div>
-                <div class="col-12">
-                    <button class="btn btn-primary add-btn" type="submit">SignUp</button>
+                <div class="mt-4">
+                    <button class="btn btn-auth add-btn" type="submit">Create Account</button>
                 </div>
+                <p class="text-center mt-3" style="font-size:0.88rem;color:var(--wl-muted);">
+                    Already have an account? <a href="/login" style="color:var(--wl-primary);font-weight:600;">Login</a>
+                </p>
             </form>
         </div>
     </div>

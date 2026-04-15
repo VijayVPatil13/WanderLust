@@ -1,13 +1,13 @@
 <% if(success) {%>
-    <div class="alert alert-success alert-dismissible fade show col-4 offset-4" role="alert">
-        <%= success %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style="max-width:560px;margin:10px auto;width:calc(100% - 2rem);">
+        <i class="fa-solid fa-circle-check me-2"></i><%= success %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <% } %>
 
 <% if(error) {%>
-    <div class="alert alert-danger alert-dismissible fade show col-4 offset-4" role="alert">
-        <%= error %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="max-width:560px;margin:10px auto;width:calc(100% - 2rem);">
+        <i class="fa-solid fa-circle-exclamation me-2"></i><%= error %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <% } %>

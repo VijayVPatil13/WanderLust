@@ -1,14 +1,26 @@
 <% layout('/layouts/boilerplate') %>
 <body>
-    <div class="col-md-8 offset-md-2 mt-4">
+    <div class="col-md-8 offset-md-2 mt-4 mb-5">
         <div class="booking-empty-state">
+            <div class="booking-empty-icon" style="margin-bottom:1rem;">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
             <h3 class="bookings-page-title">Complete Payment</h3>
-            <p class="bookings-page-subtitle mb-3">Secure your booking to confirm your stay.</p>
+            <p class="bookings-page-subtitle mb-4">Secure your booking to confirm your stay.</p>
 
-            <h3 class="bookings-page-title mb-1">Total Amount: <%= formatCurrency(booking.totalPrice) %></h3>
-            <p class="booking-muted mb-3">Secure payment powered by Razorpay</p>
+            <div style="background:#f9f9f9;border:1px solid var(--wl-border);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;">
+                <p class="mb-1" style="font-size:0.88rem;color:var(--wl-muted);">Total Amount</p>
+                <h3 class="bookings-page-title mb-0" style="color:var(--wl-primary);">
+                    <%= formatCurrency(booking.totalPrice) %>
+                </h3>
+                <p class="booking-muted mt-1" style="font-size:0.82rem;">
+                    <i class="fa-solid fa-lock me-1"></i>Secure payment powered by Razorpay
+                </p>
+            </div>
 
-            <button id="pay-btn" class="btn booking-now-btn">Pay Now</button>
+            <button id="pay-btn" class="btn booking-now-btn" style="max-width:360px;margin:0 auto;display:block;">
+                <i class="fa-solid fa-credit-card me-2"></i>Pay Now
+            </button>
         </div>
     </div>
 
@@ -19,7 +31,7 @@
 
         const resetButton = () => {
             payBtn.disabled = false;
-            payBtn.textContent = "Pay Now";
+            payBtn.innerHTML = '<i class="fa-solid fa-credit-card me-2"></i>Pay Now';
         };
 
         const options = {
@@ -36,7 +48,7 @@
             },
             handler: async function (response) {
                 payBtn.disabled = true;
-                payBtn.textContent = "Verifying...";
+                payBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Verifying...';
 
                 try {
                     const verifyResponse = await fetch("/api/bookings/verify-payment", {
@@ -88,7 +100,7 @@
         });
 
         payBtn.onclick = function () {
-            this.textContent = "Processing...";
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
             this.disabled = true;
             rzp.open();
         };

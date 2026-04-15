@@ -34,7 +34,7 @@
             <a href="/listings" class="btn btn-outline-dark rounded-pill mt-2">Clear Filters</a>
         </div>
     <% } else { %>
-        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 mt-3 g-4">
             <% for (let listing of listings) { %>
                 <div class="col mb-4">
                     <a href="/listings/<%= listing.id %>" class="text-decoration-none text-dark">
